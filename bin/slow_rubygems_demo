@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+profile = 'require_profile'
+
+if ENV['WARP']
+  puts 'Using rubygems-warp'
+  require 'rubygems-warp'
+  profile << '_warp'
+end
+
+require 'perftools'
+
+def time(desc)
+  start = Time.now
+  yield
+  duration = Time.now - start
+  puts "#{desc} took #{duration}s"
+end
+
+PerfTools::CpuProfiler.start profile do
+  time "require 'slow_rubygems_demo'" do
+    require 'slow_rubygems_demo'
+
+    SlowRubygemsDemo.prove_activesupport_version
+  end
+end
+
+puts `pprof.rb --gif #{profile} > #{profile}.gif`
+puts "Output call trace graph to #{profile}.gif"
